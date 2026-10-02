@@ -5,32 +5,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.AdapterListUpdateCallback;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.AsyncListDiffer;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import ru.yandex.practicum.contacts.R;
 import ru.yandex.practicum.contacts.databinding.ItemSortBinding;
-import ru.yandex.practicum.contacts.presentation.base.BaseListDiffCallback;
+import ru.yandex.practicum.contacts.presentation.base.CommonAdapter;
 import ru.yandex.practicum.contacts.presentation.sort.model.SortType;
 
-public class SortTypeAdapter extends RecyclerView.Adapter<SortTypeAdapter.ViewHolder> {
-
-    private final AsyncListDiffer<SortTypeUI> differ = new AsyncListDiffer<>(
-            new AdapterListUpdateCallback(this),
-            new AsyncDifferConfig.Builder<>(new BaseListDiffCallback<SortTypeUI>()).build()
-    );
-
-    private final Consumer<SortTypeUI> clickListener;
+public class SortTypeAdapter extends CommonAdapter<SortTypeUI, SortTypeAdapter.ViewHolder> {
 
     public SortTypeAdapter(Consumer<SortTypeUI> clickListener) {
-        this.clickListener = clickListener;
+        super(clickListener);
     }
 
     @NonNull
@@ -42,23 +28,13 @@ public class SortTypeAdapter extends RecyclerView.Adapter<SortTypeAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(differ.getCurrentList().get(position));
+    protected void bind(@NonNull ViewHolder holder, @NonNull SortTypeUI item) {
+        holder.bind(item);
     }
 
-    @Override
-    public int getItemCount() {
-        return differ.getCurrentList().size();
-    }
-
-    public void setItems(List<SortTypeUI> items) {
-        differ.submitList(items);
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
 
         private final ItemSortBinding binding;
-
         private SortTypeUI data;
 
         public ViewHolder(@NonNull ItemSortBinding binding, Consumer<SortTypeUI> clickListener) {
@@ -76,16 +52,11 @@ public class SortTypeAdapter extends RecyclerView.Adapter<SortTypeAdapter.ViewHo
 
         private int resource(SortType sortType) {
             switch (sortType) {
-                case BY_NAME:
-                    return R.string.sort_by_name;
-                case BY_NAME_REVERSED:
-                    return R.string.sort_by_name_reversed;
-                case BY_SURNAME:
-                    return R.string.sort_by_surname;
-                case BY_SURNAME_REVERSED:
-                    return R.string.sort_by_surname_reversed;
-                default:
-                    throw new IllegalArgumentException("Not supported SortType");
+                case BY_NAME: return R.string.sort_by_name;
+                case BY_NAME_REVERSED: return R.string.sort_by_name_reversed;
+                case BY_SURNAME: return R.string.sort_by_surname;
+                case BY_SURNAME_REVERSED: return R.string.sort_by_surname_reversed;
+                default: throw new IllegalArgumentException("Not supported SortType");
             }
         }
     }

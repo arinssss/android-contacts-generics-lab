@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,23 +28,28 @@ public class SortDialogFragment extends BaseBottomSheetDialogFragment<SortViewMo
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        iniViewModel();
-        adapter = new SortTypeAdapter(viewModel::onSortTypeItemClick);
-        binding.recycler.setAdapter(adapter);
-
-        final DividerItemDecoration decoration = new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL);
-        decoration.setDrawable(Objects.requireNonNull(ContextCompat.getDrawable(requireActivity(), R.drawable.item_decoration_16dp)));
-        binding.recycler.addItemDecoration(decoration);
-
-        viewModel.getSortTypesLiveDate().observe(this, this::updateSortTypes);
-        viewModel.getUiStateLiveDate().observe(this, this::updateState);
-    }
-
-    private void iniViewModel() {
+    protected void initViewModel() {
         final SortType defaultSortType = from(getArguments());
         viewModel.init(defaultSortType);
+    }
+
+    @Override
+    protected RecyclerView.Adapter<?> createAdapter() {
+        adapter = new SortTypeAdapter(viewModel::onSortTypeItemClick);
+        return adapter;
+    }
+
+    @Override
+    protected RecyclerView.ItemDecoration createItemDecoration() {
+        final DividerItemDecoration decoration = new DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL);
+        decoration.setDrawable(Objects.requireNonNull(ContextCompat.getDrawable(requireActivity(), R.drawable.item_decoration_16dp)));
+        return decoration;
+    }
+
+    @Override
+    protected void observeViewModel() {
+        viewModel.getSortTypesLiveDate().observe(this, this::updateSortTypes);
+        viewModel.getUiStateLiveDate().observe(this, this::updateState);
     }
 
     private void updateSortTypes(List<SortTypeUI> sortTypes) {
@@ -52,7 +58,6 @@ public class SortDialogFragment extends BaseBottomSheetDialogFragment<SortViewMo
 
     private void updateState(SortViewModel.UiState state) {
         binding.applyButton.setEnabled(state.isApplyEnable);
-
         if (state.newSelectedSortType != null) {
             getParentFragmentManager().setFragmentResult(REQUEST_KEY, createBundle(state.newSelectedSortType));
             dismiss();
@@ -66,9 +71,7 @@ public class SortDialogFragment extends BaseBottomSheetDialogFragment<SortViewMo
     }
 
     public static SortType from(@Nullable Bundle bundle) {
-        if (bundle == null) {
-            return SortType.BY_NAME;
-        }
+        if (bundle == null) return SortType.BY_NAME;
         return (SortType) bundle.getSerializable(ARG_SELECTED_SORT_TYPE);
     }
 

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -55,7 +56,24 @@ public abstract class BaseBottomSheetDialogFragment<T extends BaseBottomSheetVie
         viewModel = new ViewModelProvider(this).get(viewModelClass);
         binding.applyButton.setOnClickListener(v -> viewModel.onApplyClick());
         binding.resetButton.setOnClickListener(v -> viewModel.onResetClick());
+
+        initViewModel();
+        binding.recycler.setAdapter(createAdapter());
+        binding.recycler.addItemDecoration(createItemDecoration());
+        observeViewModel();
     }
+
+    /** Инициализация ViewModel (например, viewModel.init(defaultValue)) */
+    protected abstract void initViewModel();
+
+    /** Создание адаптера */
+    protected abstract RecyclerView.Adapter<?> createAdapter();
+
+    /** Создание декоратора (можно вернуть null) */
+    protected abstract RecyclerView.ItemDecoration createItemDecoration();
+
+    /** Подписка на LiveData */
+    protected abstract void observeViewModel();
 
     @Override
     public void onDestroy() {

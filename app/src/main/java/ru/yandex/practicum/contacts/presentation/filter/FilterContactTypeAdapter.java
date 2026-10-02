@@ -5,35 +5,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.AdapterListUpdateCallback;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.AsyncListDiffer;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import ru.yandex.practicum.contacts.databinding.ItemFilterBinding;
 import ru.yandex.practicum.contacts.model.ContactType;
-import ru.yandex.practicum.contacts.presentation.base.BaseListDiffCallback;
+import ru.yandex.practicum.contacts.presentation.base.CommonAdapter;
 import ru.yandex.practicum.contacts.presentation.filter.model.FilterContactType;
 import ru.yandex.practicum.contacts.presentation.filter.model.FilterContactTypeUi;
 import ru.yandex.practicum.contacts.utils.model.ContactTypeUtils;
 import ru.yandex.practicum.contacts.utils.model.FilterContactTypeUtils;
 
-public class FilterContactTypeAdapter extends RecyclerView.Adapter<FilterContactTypeAdapter.ViewHolder> {
-
-    private final AsyncListDiffer<FilterContactTypeUi> differ = new AsyncListDiffer<>(
-            new AdapterListUpdateCallback(this),
-            new AsyncDifferConfig.Builder<>(new BaseListDiffCallback<FilterContactTypeUi>()).build()
-    );
-
-    private final Consumer<FilterContactTypeUi> clickListener;
+public class FilterContactTypeAdapter extends CommonAdapter<FilterContactTypeUi, FilterContactTypeAdapter.ViewHolder> {
 
     public FilterContactTypeAdapter(Consumer<FilterContactTypeUi> clickListener) {
-        this.clickListener = clickListener;
+        super(clickListener);
     }
 
     @NonNull
@@ -45,23 +31,13 @@ public class FilterContactTypeAdapter extends RecyclerView.Adapter<FilterContact
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(differ.getCurrentList().get(position));
+    protected void bind(@NonNull ViewHolder holder, @NonNull FilterContactTypeUi item) {
+        holder.bind(item);
     }
 
-    @Override
-    public int getItemCount() {
-        return differ.getCurrentList().size();
-    }
-
-    public void setItems(List<FilterContactTypeUi> items) {
-        differ.submitList(items);
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
 
         private final ItemFilterBinding binding;
-
         private FilterContactTypeUi data;
 
         public ViewHolder(@NonNull ItemFilterBinding binding, Consumer<FilterContactTypeUi> clickListener) {
@@ -76,7 +52,7 @@ public class FilterContactTypeAdapter extends RecyclerView.Adapter<FilterContact
             final int sortResId = FilterContactTypeUtils.getStringRes(data.getContactType());
             binding.text.setText(sortResId);
             binding.selected.setChecked(data.isSelected());
-            if (data.getContactType() == FilterContactType.ALL){
+            if (data.getContactType() == FilterContactType.ALL) {
                 binding.logo.setVisibility(View.GONE);
             } else {
                 final ContactType contactType = FilterContactTypeUtils.toContactType(data.getContactType());

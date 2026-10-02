@@ -5,6 +5,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,24 +30,28 @@ public class FilterContactTypeDialogFragment extends BaseBottomSheetDialogFragme
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        iniViewModel();
-        adapter = new FilterContactTypeAdapter(viewModel::onFilterTypeItemClick);
-        binding.recycler.setAdapter(adapter);
-
-        final DividerItemDecoration decoration = new DividerItemDecoration(
-                requireActivity(), R.drawable.item_decoration_16dp, R.drawable.item_decoration_72dp, DividerItemDecoration.VERTICAL
-        );
-        binding.recycler.addItemDecoration(decoration);
-
-        viewModel.getFilterContactTypesLiveDate().observe(this, this::updateFilterContactTypes);
-        viewModel.getUiStateLiveDate().observe(this, this::updateState);
-    }
-
-    private void iniViewModel() {
+    protected void initViewModel() {
         final Set<ContactType> defaultFilterContactTypes = from(getArguments());
         viewModel.init(defaultFilterContactTypes);
+    }
+
+    @Override
+    protected RecyclerView.Adapter<?> createAdapter() {
+        adapter = new FilterContactTypeAdapter(viewModel::onFilterTypeItemClick);
+        return adapter;
+    }
+
+    @Override
+    protected RecyclerView.ItemDecoration createItemDecoration() {
+        return new DividerItemDecoration(
+                requireActivity(), R.drawable.item_decoration_16dp, R.drawable.item_decoration_72dp, DividerItemDecoration.VERTICAL
+        );
+    }
+
+    @Override
+    protected void observeViewModel() {
+        viewModel.getFilterContactTypesLiveDate().observe(this, this::updateFilterContactTypes);
+        viewModel.getUiStateLiveDate().observe(this, this::updateState);
     }
 
     private void updateFilterContactTypes(List<FilterContactTypeUi> filterTypes) {
@@ -55,7 +60,6 @@ public class FilterContactTypeDialogFragment extends BaseBottomSheetDialogFragme
 
     private void updateState(FilterContactTypeViewModel.UiState state) {
         binding.applyButton.setEnabled(state.isApplyEnable);
-
         if (!state.newSelectedContactTypes.isEmpty()) {
             getParentFragmentManager().setFragmentResult(REQUEST_KEY, createBundle(state.newSelectedContactTypes));
             dismiss();
@@ -70,9 +74,7 @@ public class FilterContactTypeDialogFragment extends BaseBottomSheetDialogFragme
 
     @SuppressWarnings("unchecked")
     public static Set<ContactType> from(@Nullable Bundle bundle) {
-        if (bundle == null) {
-            return Collections.emptySet();
-        }
+        if (bundle == null) return Collections.emptySet();
         return (Set<ContactType>) bundle.getSerializable(ARG_SELECTED_FILTER_CONTACT_TYPE);
     }
 
